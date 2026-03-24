@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SafeRoute – AI-Powered Disaster Readiness</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #0f1626;
+    --bg3: #141d2e;
+    --card: #192035;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e8edf5;
+    --muted: #7a8aaa;
+    --accent: #3d9bff;
+    --accent2: #00d4aa;
+    --danger: #ff4d4d;
+    --warn: #ffaa00;
+    --success: #00d4aa;
+    --font: 'Space Grotesk', sans-serif;
+    --head: 'Sora', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.6; min-height: 100vh; }
+  a { color: inherit; text-decoration: none; }
+
+nav {
+position: sticky; top: 0; z-index: 100;
+background: rgba(10,14,26,0.92); backdrop-filter: blur(12px);
+border-bottom: 1px solid var(–border);
+display: flex; align-items: center; justify-content: space-between;
+padding: 0 2rem; height: 60px;
+}
+.logo { font-family: var(–head); font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, #3d9bff, #00d4aa); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.nav-links { display: flex; gap: 0; }
+.nav-links button { background: none; border: none; color: var(–muted); font-family: var(–font); font-size: 13px; cursor: pointer; padding: 8px 14px; border-radius: 6px; transition: all .2s; }
+.nav-links button:hover, .nav-links button.active { color: var(–text); background: rgba(255,255,255,0.06); }
+.nav-badge { background: var(–danger); color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 4px; font-weight: 600; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+
+.page { display: none; }
+.page.active { display: block; }
+
+.hero {
+padding: 2.5rem 2rem 1.5rem;
+background: linear-gradient(180deg, rgba(61,155,255,0.04) 0%, transparent 100%);
+border-bottom: 1px solid var(–border);
+}
+.hero-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.5rem; }
+.hero h1 { font-family: var(–head); font-size: 1.4rem; font-weight: 600; }
+.hero p { color: var(–muted); font-size: 13px; margin-top: 4px; }
+.alert-banner {
+background: rgba(255,77,77,0.12); border: 1px solid rgba(255,77,77,0.3);
+border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 10px;
+animation: alertPulse 3s ease-in-out infinite;
+}
+@keyframes alertPulse { 0%,100%{border-color:rgba(255,77,77,0.3)} 50%{border-color:rgba(255,77,77,0.6)} }
+.alert-dot { width: 8px; height: 8px; background: var(–danger); border-radius: 50%; flex-shrink: 0; animation: pulse 1.5s infinite; }
+.alert-text { font-size: 13px; }
+.alert-text strong { color: var(–danger); }
+
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 1.5rem 2rem; }
+.stat-card {
+background: var(–card); border: 1px solid var(–border); border-radius: 12px;
+padding: 16px; position: relative; overflow: hidden;
+}
+.stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(–muted); margin-bottom: 6px; }
+.stat-value { font-family: var(–head); font-size: 1.8rem; font-weight: 700; line-height: 1; }
+.stat-sub { font-size: 11px; color: var(–muted); margin-top: 4px; }
+.stat-danger .stat-value { color: var(–danger); }
+.stat-warn .stat-value { color: var(–warn); }
+.stat-ok .stat-value { color: var(–success); }
+
+.main-grid { display: grid; grid-template-columns: 1fr 340px; gap: 16px; padding: 0 2rem 2rem; }
+
+.map-panel { background: var(–card); border: 1px solid var(–border); border-radius: 14px; overflow: hidden; }
+.panel-header { padding: 14px 16px; border-bottom: 1px solid var(–border); display: flex; align-items: center; justify-content: space-between; }
+.panel-title { font-family: var(–head); font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.panel-title .dot { width: 6px; height: 6px; border-radius: 50%; background: var(–success); animation: pulse 2s infinite; }
+.map-viz { position: relative; height: 340px; background: #0d1320; overflow: hidden; }
+.map-grid {
+position: absolute; inset: 0;
+background-image: linear-gradient(rgba(61,155,255,0.04) 1px, transparent 1px),
+linear-gradient(90deg, rgba(61,155,255,0.04) 1px, transparent 1px);
+background-size: 40px 40px;
+}
+.map-roads { position: absolute; inset: 0; }
+.shelter-marker {
+position: absolute; width: 44px;
+display: flex; flex-direction: column; align-items: center;
+cursor: pointer; transition: transform .2s; gap: 2px;
+}
+.shelter-marker:hover { transform: scale(1.12); }
+.shelter-icon {
+width: 36px; height: 36px; border-radius: 50%;
+display: flex; align-items: center; justify-content: center;
+font-size: 12px; font-weight: 700;
+}
+.shelter-pct {
+font-size: 9px; font-weight: 700; line-height: 1;
+background: rgba(0,0,0,0.55); border-radius: 4px; padding: 1px 4px;
+}
+.shelter-ok .shelter-icon { background: rgba(0,212,170,0.2); border: 2px solid var(–success); color: var(–success); }
+.shelter-ok .shelter-pct { color: var(–success); }
+.shelter-warn .shelter-icon { background: rgba(255,170,0,0.2); border: 2px solid var(–warn); color: var(–warn); }
+.shelter-warn .shelter-pct { color: var(–warn); }
+.shelter-full .shelter-icon { background: rgba(255,77,77,0.2); border: 2px solid var(–danger); color: var(–danger); }
+.shelter-full .shelter-pct { color: var(–danger); }
+.user-loc { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: var(–accent); border: 3px solid rgba(255,255,255,0.9); box-shadow: 0 0 0 6px rgba(61,155,255,0.2); animation: locPulse 2s ease-in-out infinite; }
+@keyframes locPulse { 0%,100%{box-shadow:0 0 0 6px rgba(61,155,255,0.2)} 50%{box-shadow:0 0 0 12px rgba(61,155,255,0.05)} }
+.shelter-popup {
+position: absolute; background: var(–bg2); border: 1px solid var(–border2); border-radius: 10px;
+padding: 10px 14px; min-width: 160px; z-index: 10;
+font-size: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+display: none;
+}
+.shelter-popup.visible { display: block; }
+.popup-name { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+.popup-row { display: flex; justify-content: space-between; gap: 12px; color: var(–muted); }
+.popup-val { color: var(–text); font-weight: 500; }
+.map-legend { position: absolute; bottom: 12px; left: 12px; display: flex; gap: 10px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(–muted); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+.shelter-list-panel { display: flex; flex-direction: column; gap: 0; }
+.shelter-card {
+background: var(–card); border: 1px solid var(–border); border-radius: 12px;
+padding: 14px; cursor: pointer; transition: all .2s; margin-bottom: 10px;
+}
+.shelter-card:hover { border-color: var(–border2); background: var(–bg3); }
+.shelter-card.recommended { border-color: rgba(0,212,170,0.4); background: rgba(0,212,170,0.04); }
+.shelter-card.recommended .rec-badge { display: inline-flex; }
+.rec-badge {
+display: none; background: rgba(0,212,170,0.15); color: var(–success);
+font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 6px;
+align-items: center; gap: 4px; margin-bottom: 6px;
+}
+.shelter-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+.shelter-meta { font-size: 12px; color: var(–muted); display: flex; gap: 12px; margin-bottom: 8px; }
+.capacity-bar-wrap { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+.capacity-bar { height: 100%; border-radius: 2px; transition: width .5s; }
+.cap-ok { background: var(–success); }
+.cap-warn { background: var(–warn); }
+.cap-full { background: var(–danger); }
+.shelter-amenities { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.amenity { font-size: 10px; background: rgba(255,255,255,0.06); border: 1px solid var(–border); border-radius: 4px; padding: 2px 7px; color: var(–muted); }
+
+.risk-panel { background: var(–card); border: 1px solid var(–border); border-radius: 14px; overflow: hidden; margin-bottom: 12px; }
+.risk-meter { padding: 20px; }
+.risk-arc-wrap { display: flex; justify-content: center; margin: 8px 0; }
+.risk-level { text-align: center; }
+.risk-level .level { font-family: var(–head); font-size: 1.6rem; font-weight: 700; color: var(–warn); }
+.risk-level .sublabel { font-size: 11px; color: var(–muted); }
+.risk-factors { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 8px; }
+.risk-factor { display: flex; align-items: center; gap: 10px; }
+.rf-label { font-size: 12px; color: var(–muted); width: 80px; flex-shrink: 0; }
+.rf-bar { flex: 1; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+.rf-fill { height: 100%; border-radius: 3px; }
+.rf-val { font-size: 11px; color: var(–muted); width: 28px; text-align: right; }
+
+.alerts-panel { background: var(–card); border: 1px solid var(–border); border-radius: 14px; overflow: hidden; margin-bottom: 12px; }
+.alert-items { max-height: 200px; overflow-y: auto; }
+.alert-item { padding: 10px 16px; border-bottom: 1px solid var(–border); display: flex; gap: 10px; font-size: 12px; }
+.alert-item:last-child { border-bottom: none; }
+.ai-time { color: var(–muted); flex-shrink: 0; width: 40px; }
+.ai-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.ai-text { color: var(–text); }
+
+/* ── MINI STATS ROW (now in left column, below map) ── */
+.side-stats-row {
+display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+margin-top: 12px;
+}
+.side-stat {
+background: var(–card); border: 1px solid var(–border); border-radius: 10px;
+padding: 11px 10px; text-align: center;
+}
+.side-stat-val {
+font-family: var(–head); font-size: 1.35rem; font-weight: 700; line-height: 1;
+margin-bottom: 3px;
+}
+.side-stat-lbl { font-size: 10px; color: var(–muted); line-height: 1.3; }
+
+.cta-box {
+background: rgba(255,77,77,0.08);
+border: 1px solid rgba(255,77,77,0.25);
+border-radius: 14px;
+padding: 18px;
+}
+.cta-box h3 {
+font-family: var(–head); font-size: 14px; font-weight: 600;
+color: var(–danger); margin-bottom: 6px;
+}
+.cta-box p {
+font-size: 12.5px; color: var(–muted); line-height: 1.55; margin-bottom: 14px;
+}
+.cta-btn {
+width: 100%; background: var(–danger); color: white;
+border: none; border-radius: 9px; padding: 11px;
+font-family: var(–head); font-size: 13.5px; font-weight: 600;
+cursor: pointer; transition: all .2s;
+display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.cta-btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
+
+.route-page { padding: 2rem; }
+.route-form { background: var(–card); border: 1px solid var(–border); border-radius: 14px; padding: 24px; max-width: 640px; margin: 0 auto 2rem; }
+.form-title { font-family: var(–head); font-size: 1.1rem; font-weight: 600; margin-bottom: 6px; }
+.form-sub { color: var(–muted); font-size: 13px; margin-bottom: 20px; }
+.form-row { margin-bottom: 16px; }
+.form-label { font-size: 12px; color: var(–muted); margin-bottom: 6px; display: block; }
+.form-input, .form-select {
+width: 100%; background: var(–bg); border: 1px solid var(–border2); border-radius: 8px;
+color: var(–text); font-family: var(–font); font-size: 14px;
+padding: 10px 14px; outline: none; transition: border-color .2s;
+}
+.form-input:focus, .form-select:focus { border-color: var(–accent); }
+.form-select option { background: var(–bg); }
+.form-checks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.form-check { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+.form-check input { accent-color: var(–accent); }
+.btn-route {
+width: 100%; background: linear-gradient(135deg, #3d9bff, #00c4ff); color: white;
+border: none; border-radius: 10px; padding: 13px; font-family: var(–head);
+font-size: 15px; font-weight: 600; cursor: pointer; transition: all .2s;
+display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-route:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.route-result { background: var(–card); border: 1px solid rgba(0,212,170,0.3); border-radius: 14px; padding: 24px; max-width: 640px; margin: 0 auto; display: none; }
+.route-result.visible { display: block; }
+.result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+.result-icon { width: 40px; height: 40px; background: rgba(0,212,170,0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.result-name { font-family: var(–head); font-size: 1.1rem; font-weight: 600; }
+.result-sub { font-size: 12px; color: var(–success); }
+.route-steps { margin-top: 16px; }
+.route-step { display: flex; gap: 12px; margin-bottom: 14px; position: relative; }
+.route-step::before { content: ‘’; position: absolute; left: 15px; top: 30px; bottom: -14px; width: 1px; background: var(–border); }
+.route-step:last-child::before { display: none; }
+.step-num { width: 30px; height: 30px; border-radius: 50%; background: rgba(61,155,255,0.15); border: 1px solid rgba(61,155,255,0.3); color: var(–accent); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.step-text { font-size: 13px; padding-top: 6px; }
+.step-detail { color: var(–muted); font-size: 12px; }
+.eta-bar { display: flex; gap: 16px; background: var(–bg); border-radius: 10px; padding: 14px 16px; margin-top: 16px; }
+.eta-item { flex: 1; text-align: center; }
+.eta-val { font-family: var(–head); font-size: 1.3rem; font-weight: 700; color: var(–accent); }
+.eta-label { font-size: 11px; color: var(–muted); }
+
+.pred-page { padding: 2rem; }
+.pred-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 900px; margin: 0 auto; }
+.pred-card { background: var(–card); border: 1px solid var(–border); border-radius: 14px; padding: 20px; }
+.pred-card-title { font-family: var(–head); font-size: 14px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.chart-bars { display: flex; align-items: flex-end; gap: 6px; height: 100px; }
+.bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.bar { width: 100%; border-radius: 4px 4px 0 0; transition: height .5s; min-height: 4px; }
+.bar-label { font-size: 10px; color: var(–muted); }
+.weather-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.weather-item { background: var(–bg); border-radius: 8px; padding: 10px 12px; }
+.w-val { font-family: var(–head); font-size: 1.4rem; font-weight: 700; }
+.w-label { font-size: 11px; color: var(–muted); }
+.model-info { background: rgba(61,155,255,0.05); border: 1px solid rgba(61,155,255,0.15); border-radius: 10px; padding: 14px; margin-top: 12px; font-size: 12px; }
+.model-info .mi-title { font-weight: 600; color: var(–accent); margin-bottom: 4px; }
+.model-info .mi-text { color: var(–muted); line-height: 1.6; }
+.risk-timeline { margin-top: 8px; }
+.rt-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.rt-time { font-size: 11px; color: var(–muted); width: 50px; }
+.rt-bar { flex: 1; height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 11px; font-weight: 500; transition: width .5s; }
+.rt-low { background: rgba(0,212,170,0.15); color: var(–success); }
+.rt-med { background: rgba(255,170,0,0.15); color: var(–warn); }
+.rt-high { background: rgba(255,77,77,0.15); color: var(–danger); }
+
+.offline-pill {
+display: inline-flex; align-items: center; gap: 6px;
+background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.2);
+border-radius: 20px; padding: 4px 12px; font-size: 11px; color: var(–success);
+}
+
+.lang-btn {
+background: var(–bg3); border: 1px solid var(–border2); color: var(–muted);
+font-family: var(–font); font-size: 12px; padding: 5px 10px; border-radius: 6px; cursor: pointer;
+transition: all .2s;
+}
+.lang-btn:hover { color: var(–text); border-color: var(–accent); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.2); border-top-color: white; border-radius: 50%; animation: spin .6s linear infinite; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(–border2); border-radius: 2px; }
+
+.tag { font-size: 10px; background: rgba(61,155,255,0.12); color: var(–accent); padding: 2px 8px; border-radius: 4px; font-weight: 500; }
+.tag-warn { background: rgba(255,170,0,0.12); color: var(–warn); }
+.tag-ok { background: rgba(0,212,170,0.12); color: var(–success); }
+.tag-danger { background: rgba(255,77,77,0.12); color: var(–danger); }
+
+.section-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(–muted); margin-bottom: 10px; }
+</style>
+
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon">🛡</div>
+    SafeRoute
+  </div>
+  <div class="nav-links">
+    <button class="active" onclick="showPage('dashboard')">Dashboard</button>
+    <button onclick="showPage('routing')">Find Shelter</button>
+    <button onclick="showPage('prediction')">Prediction AI</button>
+    <button onclick="showPage('community')">Community</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="offline-pill">
+      <span style="width:6px;height:6px;background:var(--success);border-radius:50%;"></span>
+      Offline-ready
+    </div>
+    <button class="lang-btn" onclick="cycleLang()" id="lang-btn">🇵🇭 Filipino</button>
+  </div>
+</nav>
+
+<!-- =========== DASHBOARD =========== -->
+
+<div id="page-dashboard" class="page active">
+  <div class="hero">
+    <div class="hero-top">
+      <div>
+        <h1>Metro Manila – Disaster Dashboard</h1>
+        <p>Real-time AI monitoring · Last updated <span id="last-update">just now</span></p>
+      </div>
+      <span class="tag tag-warn">Typhoon Advisory</span>
+    </div>
+    <div class="alert-banner">
+      <div class="alert-dot"></div>
+      <div class="alert-text">
+        <strong>ALERT:</strong> Typhoon Signal No. 2 active. AI risk model predicts flood risk escalation in 3–6 hours. 
+        <strong style="color:var(--accent);cursor:pointer" onclick="showPage('routing')"> → Find nearest shelter</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card stat-warn">
+      <div class="stat-label">AI Risk Level</div>
+      <div class="stat-value">HIGH</div>
+      <div class="stat-sub">↑ Elevated from Medium</div>
+    </div>
+    <div class="stat-card stat-ok">
+      <div class="stat-label">Shelters Available</div>
+      <div class="stat-value">14</div>
+      <div class="stat-sub">of 18 total active</div>
+    </div>
+    <div class="stat-card stat-danger">
+      <div class="stat-label">Overcrowded</div>
+      <div class="stat-value">4</div>
+      <div class="stat-sub">shelters at &gt;90% capacity</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Evacuated (est.)</div>
+      <div class="stat-value" style="color:var(--accent)">2,841</div>
+      <div class="stat-sub">via SafeRoute today</div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <!-- LEFT COLUMN: Map + Mini Stats -->
+    <div>
+      <div class="map-panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="dot"></span>Live Shelter Map · Metro Manila</div>
+          <span class="tag">AI-Routed</span>
+        </div>
+        <div class="map-viz" id="map-viz">
+          <div class="map-grid"></div>
+          <svg class="map-roads" viewBox="0 0 600 340" style="position:absolute;inset:0;width:100%;height:100%">
+            <path d="M0,170 Q150,120 300,170 Q450,220 600,170" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="12"/>
+            <path d="M300,0 Q280,100 300,170 Q320,240 300,340" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="10"/>
+            <path d="M0,80 L600,80" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="6"/>
+            <path d="M0,270 L600,270" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="6"/>
+            <path d="M150,0 L150,340" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="6"/>
+            <path d="M450,0 L450,340" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="6"/>
+            <ellipse cx="120" cy="240" rx="80" ry="50" fill="rgba(61,155,255,0.08)" stroke="rgba(61,155,255,0.2)" stroke-width="1" stroke-dasharray="4,3"/>
+            <text x="120" y="245" text-anchor="middle" fill="rgba(61,155,255,0.5)" font-size="9" font-family="sans-serif">Flood zone</text>
+            <path d="M285,195 Q260,180 230,170 Q200,160 185,145" fill="none" stroke="#00d4aa" stroke-width="2" stroke-dasharray="6,4" opacity="0.7"/>
+          </svg>
+          <div class="shelter-marker shelter-ok" style="left:26%;top:34%" onclick="showPopup('sm1', this)"><div class="shelter-icon">QC</div><span class="shelter-pct">34%</span></div>
+          <div class="shelter-marker shelter-warn" style="left:52%;top:18%" onclick="showPopup('sm2', this)"><div class="shelter-icon">MN</div><span class="shelter-pct">84%</span></div>
+          <div class="shelter-marker shelter-full" style="left:18%;top:57%" onclick="showPopup('sm3', this)"><div class="shelter-icon">PV</div><span class="shelter-pct">94%</span></div>
+          <div class="shelter-marker shelter-ok" style="left:68%;top:44%" onclick="showPopup('sm4', this)"><div class="shelter-icon">MG</div><span class="shelter-pct">35%</span></div>
+          <div class="shelter-marker shelter-warn" style="left:75%;top:20%" onclick="showPopup('sm5', this)"><div class="shelter-icon">CH</div><span class="shelter-pct">73%</span></div>
+          <div class="user-loc" style="left:calc(47% - 7px);top:calc(57% - 7px)"></div>
+        <div class="shelter-popup" id="map-popup">
+            <div class="popup-name" id="popup-name">Quezon City Sports Complex</div>
+            <div class="popup-row"><span>Filled</span><span class="popup-val" id="popup-pct" style="color:var(--success)">34%</span></div>
+            <div style="margin:5px 0 7px">
+              <div style="height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden">
+                <div id="popup-pct-bar" style="height:100%;border-radius:3px;background:var(--success);width:34%;transition:width .4s"></div>
+              </div>
+            </div>
+            <div class="popup-row"><span>Capacity</span><span class="popup-val" id="popup-cap">170/500</span></div>
+            <div class="popup-row"><span>Distance</span><span class="popup-val" id="popup-dist">1.2 km</span></div>
+            <div class="popup-row"><span>ETA</span><span class="popup-val" id="popup-eta">14 min</span></div>
+            <div class="popup-row"><span>Status</span><span class="popup-val" id="popup-status" style="color:var(--success)">Available</span></div>
+            <div id="popup-amenities" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:7px;font-size:10px"></div>
+            <button style="margin-top:8px;width:100%;background:var(--accent);color:white;border:none;border-radius:6px;padding:6px;font-size:12px;cursor:pointer;font-family:inherit" onclick="showPage('routing')">Get Directions →</button>
+          </div>
+          <div class="map-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--success)"></div>Available</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--warn)"></div>Filling up</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--danger)"></div>Full</div>
+          </div>
+        </div>
+      </div>
+
+```
+  <!-- Mini shelter stats — now in left column below map -->
+  <div class="side-stats-row">
+    <div class="side-stat">
+      <div class="side-stat-val" style="color:var(--danger)">4</div>
+      <div class="side-stat-lbl">Shelters at capacity</div>
+    </div>
+    <div class="side-stat">
+      <div class="side-stat-val" style="color:var(--success)">14</div>
+      <div class="side-stat-lbl">Shelters with space</div>
+    </div>
+    <div class="side-stat">
+      <div class="side-stat-val" style="color:var(--accent)">2,841</div>
+      <div class="side-stat-lbl">People routed today</div>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT COLUMN: Risk + Alerts + CTA -->
+<div>
+  <!-- Risk -->
+  <div class="risk-panel">
+    <div class="panel-header"><div class="panel-title">AI Risk Assessment</div><span class="tag tag-warn">XGBoost Model</span></div>
+    <div class="risk-meter">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="risk-level">
+          <div class="level" id="risk-level-text">HIGH</div>
+          <div class="sublabel">Overall Disaster Risk</div>
+        </div>
+        <svg viewBox="0 0 100 56" width="110" height="62">
+          <path d="M10,50 A40,40 0 0,1 90,50" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="8" stroke-linecap="round"/>
+          <path id="risk-arc" d="M10,50 A40,40 0 0,1 90,50" fill="none" stroke="#ffaa00" stroke-width="8" stroke-linecap="round" stroke-dasharray="125" stroke-dashoffset="40"/>
+          <text x="50" y="52" text-anchor="middle" fill="#7a8aaa" font-size="8" font-family="sans-serif">Low → Critical</text>
+        </svg>
+      </div>
+    </div>
+    <div class="risk-factors">
+      <div class="section-label" style="margin:0 0 6px">Contributing Factors</div>
+      <div class="risk-factor">
+        <span class="rf-label">Rainfall</span>
+        <div class="rf-bar"><div class="rf-fill" style="width:78%;background:var(--danger)"></div></div>
+        <span class="rf-val">78%</span>
+      </div>
+      <div class="risk-factor">
+        <span class="rf-label">Wind speed</span>
+        <div class="rf-bar"><div class="rf-fill" style="width:65%;background:var(--warn)"></div></div>
+        <span class="rf-val">65%</span>
+      </div>
+      <div class="risk-factor">
+        <span class="rf-label">Water level</span>
+        <div class="rf-bar"><div class="rf-fill" style="width:82%;background:var(--danger)"></div></div>
+        <span class="rf-val">82%</span>
+      </div>
+      <div class="risk-factor">
+        <span class="rf-label">Historical</span>
+        <div class="rf-bar"><div class="rf-fill" style="width:55%;background:var(--accent)"></div></div>
+        <span class="rf-val">55%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alert Log -->
+  <div class="alerts-panel">
+    <div class="panel-header"><div class="panel-title">Live Alert Feed</div><span class="tag tag-danger">3 new</span></div>
+    <div class="alert-items" id="alert-feed">
+      <div class="alert-item">
+        <span class="ai-time">12:41</span>
+        <div class="ai-dot" style="background:var(--danger)"></div>
+        <span class="ai-text">Pasig Evacuation Center reached 95% capacity</span>
+      </div>
+      <div class="alert-item">
+        <span class="ai-time">12:38</span>
+        <div class="ai-dot" style="background:var(--warn)"></div>
+        <span class="ai-text">Flood level rising in Marikina River (+0.4m/hr)</span>
+      </div>
+      <div class="alert-item">
+        <span class="ai-time">12:30</span>
+        <div class="ai-dot" style="background:var(--accent)"></div>
+        <span class="ai-text">AI rerouted 142 users away from Route 5 (flooded)</span>
+      </div>
+      <div class="alert-item">
+        <span class="ai-time">12:15</span>
+        <div class="ai-dot" style="background:var(--success)"></div>
+        <span class="ai-text">QC Sports Complex confirmed food stock adequate</span>
+      </div>
+      <div class="alert-item">
+        <span class="ai-time">11:58</span>
+        <div class="ai-dot" style="background:var(--warn)"></div>
+        <span class="ai-text">Typhoon signal upgraded to No. 2 by PAGASA</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-box">
+    <h3>Ready to evacuate?</h3>
+    <p>Tell us where you are and we'll find the safest route to the nearest open shelter.</p>
+    <button class="cta-btn" onclick="showPage('routing')">
+      Find my shelter →
+    </button>
+  </div>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- =========== ROUTING PAGE =========== -->
+
+<div id="page-routing" class="page route-page">
+  <div style="max-width:640px;margin:0 auto">
+    <h1 style="font-family:var(--head);font-size:1.4rem;font-weight:600;margin-bottom:6px">Find Your SafeRoute</h1>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:24px">AI selects the optimal shelter based on distance, crowd density, amenities, and road safety.</p>
+
+```
+<div class="route-form">
+  <div class="form-title">Your Information</div>
+  <div class="form-sub">Help us find the best shelter for your situation</div>
+  <div class="form-row">
+    <label class="form-label">Your location (or allow GPS)</label>
+    <input class="form-input" type="text" placeholder="Enter street address or barangay" value="Brgy. Santolan, Pasig City"/>
+  </div>
+  <div class="form-row">
+    <label class="form-label">Group size</label>
+    <select class="form-select">
+      <option>1 person</option>
+      <option selected>2–4 people (family)</option>
+      <option>5–10 people</option>
+      <option>10+ people</option>
+    </select>
+  </div>
+  <div class="form-row">
+    <label class="form-label">Special needs (select all that apply)</label>
+    <div class="form-checks">
+      <label class="form-check"><input type="checkbox"/> Wheelchair accessible</label>
+      <label class="form-check"><input type="checkbox" checked/> Medical facilities</label>
+      <label class="form-check"><input type="checkbox"/> Pet-friendly</label>
+      <label class="form-check"><input type="checkbox"/> Baby/infant care</label>
+    </div>
+  </div>
+  <div class="form-row">
+    <label class="form-label">Transport mode</label>
+    <select class="form-select">
+      <option selected>Walking</option>
+      <option>Private vehicle</option>
+      <option>Public transport</option>
+      <option>I need transport assistance</option>
+    </select>
+  </div>
+  <button class="btn-route" onclick="findRoute()">
+    <span id="route-btn-text">Find My SafeRoute →</span>
+    <div class="spinner" id="route-spinner" style="display:none"></div>
+  </button>
+</div>
+
+<div class="route-result" id="route-result">
+  <div class="result-header">
+    <div class="result-icon">🏟</div>
+    <div>
+      <div class="result-name">Quezon City Sports Complex</div>
+      <div class="result-sub">✓ AI-recommended · Best match for your needs</div>
+    </div>
+    <div style="margin-left:auto">
+      <div style="font-family:var(--head);font-size:1.5rem;font-weight:700;color:var(--success);text-align:right">34%</div>
+      <div style="font-size:10px;color:var(--muted)">Crowd level</div>
+    </div>
+  </div>
+  <div class="eta-bar">
+    <div class="eta-item"><div class="eta-val">1.2 km</div><div class="eta-label">Distance</div></div>
+    <div class="eta-item"><div class="eta-val">14 min</div><div class="eta-label">ETA (walking)</div></div>
+    <div class="eta-item"><div class="eta-val">500</div><div class="eta-label">Total capacity</div></div>
+  </div>
+  <div class="shelter-amenities" style="margin-top:14px">
+    <span class="amenity">🍚 Food available</span>
+    <span class="amenity">💧 Water supply</span>
+    <span class="amenity">🏥 Medical aid</span>
+    <span class="amenity">🔌 Power backup</span>
+    <span class="amenity">📡 WiFi</span>
+  </div>
+  <div class="route-steps">
+    <div class="section-label" style="margin:16px 0 10px">Step-by-step directions</div>
+    <div class="route-step"><div class="step-num">1</div><div><div class="step-text">Head north on Santolan Road</div><div class="step-detail">0.3 km · 4 min · ✓ Road clear</div></div></div>
+    <div class="route-step"><div class="step-num">2</div><div><div class="step-text">Turn left onto Aurora Blvd</div><div class="step-detail">0.5 km · 6 min · ⚠ Minor flooding, passable</div></div></div>
+    <div class="route-step"><div class="step-num">3</div><div><div class="step-text">Continue straight to QC Sports Complex</div><div class="step-detail">0.4 km · 4 min · ✓ Road clear</div></div></div>
+    <div class="route-step" style="margin-top:4px"><div class="step-num" style="background:rgba(0,212,170,0.15);border-color:rgba(0,212,170,0.3);color:var(--success)">✓</div><div><div class="step-text" style="color:var(--success)">Arrive at shelter — show this screen</div></div></div>
+  </div>
+  <div style="margin-top:16px;background:rgba(61,155,255,0.06);border:1px solid rgba(61,155,255,0.15);border-radius:8px;padding:12px;font-size:12px">
+    <span style="color:var(--accent);font-weight:600">📱 Offline mode:</span>
+    <span style="color:var(--muted);margin-left:4px">Directions saved locally. Works without internet. Cached 12:40 PM.</span>
+  </div>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- =========== PREDICTION PAGE =========== -->
+
+<div id="page-prediction" class="page pred-page">
+  <div style="max-width:900px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+      <div>
+        <h1 style="font-family:var(--head);font-size:1.4rem;font-weight:600;margin-bottom:4px">Disaster Prediction AI</h1>
+        <p style="color:var(--muted);font-size:13px">XGBoost model trained on PAGASA, DOST, and historical disaster data</p>
+      </div>
+      <div class="tag">Model v2.4 · 87% accuracy</div>
+    </div>
+
+```
+<div class="pred-grid">
+  <div class="pred-card">
+    <div class="pred-card-title">📅 24-Hour Risk Forecast</div>
+    <div class="risk-timeline">
+      <div class="rt-row"><span class="rt-time">Now</span><div class="rt-bar rt-high" style="width:82%">High (82%)</div></div>
+      <div class="rt-row"><span class="rt-time">+3 hrs</span><div class="rt-bar rt-high" style="width:91%">Critical (91%)</div></div>
+      <div class="rt-row"><span class="rt-time">+6 hrs</span><div class="rt-bar rt-high" style="width:88%">High (88%)</div></div>
+      <div class="rt-row"><span class="rt-time">+9 hrs</span><div class="rt-bar rt-med" style="width:64%">Medium (64%)</div></div>
+      <div class="rt-row"><span class="rt-time">+12 hrs</span><div class="rt-bar rt-med" style="width:45%">Medium (45%)</div></div>
+      <div class="rt-row"><span class="rt-time">+18 hrs</span><div class="rt-bar rt-low" style="width:28%">Low (28%)</div></div>
+      <div class="rt-row"><span class="rt-time">+24 hrs</span><div class="rt-bar rt-low" style="width:18%">Low (18%)</div></div>
+    </div>
+  </div>
+
+  <div class="pred-card">
+    <div class="pred-card-title">🌧 Live Data Inputs</div>
+    <div class="weather-grid">
+      <div class="weather-item"><div class="w-val" style="color:var(--accent)">87mm</div><div class="w-label">Rainfall (3hr)</div></div>
+      <div class="weather-item"><div class="w-val" style="color:var(--warn)">95 kph</div><div class="w-label">Wind Speed</div></div>
+      <div class="weather-item"><div class="w-val" style="color:var(--danger)">18.2m</div><div class="w-label">Water Level</div></div>
+      <div class="weather-item"><div class="w-val" style="color:var(--success)">62%</div><div class="w-label">Data confidence</div></div>
+    </div>
+    <div class="model-info">
+      <div class="mi-title">Data sources active</div>
+      <div class="mi-text">OpenWeatherMap · PAGASA RADAR · DOST WLMS · Historical records (2000–2024)</div>
+    </div>
+  </div>
+
+  <div class="pred-card">
+    <div class="pred-card-title">📊 Rainfall Forecast (mm)</div>
+    <div style="position:relative">
+      <div style="display:flex;align-items:flex-end;gap:5px;height:110px;padding-bottom:0" id="rain-chart">
+        <!-- bars rendered by JS -->
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;padding:0 2px">
+        <span style="font-size:9px;color:var(--muted)">0 mm</span>
+        <span style="font-size:9px;color:var(--muted)">max 112 mm</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="pred-card">
+    <div class="pred-card-title">🤖 AI Model Details</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="background:var(--bg);border-radius:8px;padding:12px">
+        <div style="font-size:12px;font-weight:600;margin-bottom:4px;color:var(--accent)">XGBoost Classifier</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">Trained on 24 years of Philippine disaster records. Inputs: rainfall, wind, water levels, historical patterns. Output: risk score (0–100).</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-family:var(--head);font-size:1.3rem;font-weight:700;color:var(--success)">87%</div>
+          <div style="font-size:10px;color:var(--muted)">Accuracy</div>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-family:var(--head);font-size:1.3rem;font-weight:700;color:var(--accent)">5 min</div>
+          <div style="font-size:10px;color:var(--muted)">Update interval</div>
+        </div>
+      </div>
+      <div style="background:rgba(0,212,170,0.06);border:1px solid rgba(0,212,170,0.15);border-radius:8px;padding:10px;font-size:11px">
+        <span style="color:var(--success);font-weight:600">Community feedback loop:</span>
+        <span style="color:var(--muted)"> User-submitted reports feed back into model retraining via confidence scoring.</span>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- =========== COMMUNITY PAGE =========== -->
+
+<div id="page-community" class="page" style="padding:2rem;max-width:700px;margin:0 auto">
+  <h1 style="font-family:var(--head);font-size:1.4rem;font-weight:600;margin-bottom:6px">Community Reports</h1>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:24px">Submit real-time shelter conditions. AI filters reports by confidence score before updating the map.</p>
+
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px">
+    <div style="font-weight:600;margin-bottom:14px;font-size:14px">Submit a Report</div>
+    <div class="form-row">
+      <label class="form-label">Select shelter</label>
+      <select class="form-select">
+        <option>QC Sports Complex</option>
+        <option>Manila North High School</option>
+        <option>Pasig Evacuation Center</option>
+        <option>Marikina Gym</option>
+        <option>Other location…</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Condition report</label>
+      <select class="form-select">
+        <option>✅ Open and available</option>
+        <option>⚠️ Getting crowded</option>
+        <option>❌ Full / turned away</option>
+        <option>🍚 Food running low</option>
+        <option>💧 Water running low</option>
+        <option>🏥 Medical help needed</option>
+        <option>🚧 Road blocked nearby</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Additional notes (optional)</label>
+      <input class="form-input" placeholder="e.g. 'Flood water on main road, use back alley instead'" />
+    </div>
+    <button class="btn-route" onclick="submitReport()" style="background:linear-gradient(135deg,#00d4aa,#00a8c4)">
+      <span id="report-btn-text">Submit Report</span>
+      <div class="spinner" id="report-spinner" style="display:none"></div>
+    </button>
+  </div>
+
+  <div class="section-label">Recent community reports (AI-verified)</div>
+  <div id="community-feed" style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div style="font-weight:600;font-size:13px">QC Sports Complex</div>
+        <div style="display:flex;gap:6px">
+          <span class="tag tag-ok">Verified ✓</span>
+          <span class="tag">12 min ago</span>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--muted)">Food still available, 3 medical staff present. Recommend coming here.</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">AI confidence score: 91% · 14 reports match</div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div style="font-weight:600;font-size:13px">Aurora Blvd (near Katipunan)</div>
+        <div style="display:flex;gap:6px">
+          <span class="tag tag-warn">Caution</span>
+          <span class="tag">28 min ago</span>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--muted)">Knee-deep water on southbound lane. Use pedestrian path on east side.</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">AI confidence score: 74% · 6 reports match</div>
+    </div>
+    <div style="background:var(--card);border:1px solid rgba(255,77,77,0.2);border-radius:12px;padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div style="font-weight:600;font-size:13px">Pasig Evacuation Center</div>
+        <div style="display:flex;gap:6px">
+          <span class="tag tag-danger">Full</span>
+          <span class="tag">35 min ago</span>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--muted)">Turned away at entrance. Guards say at capacity. Try Marikina Gym instead.</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">AI confidence score: 88% · 22 reports match · Map updated</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  const btns = document.querySelectorAll('.nav-links button');
+  const idx = ['dashboard','routing','prediction','community'].indexOf(id);
+  if (idx >= 0) btns[idx].classList.add('active');
+}
+
+const shelters = {
+  sm1: { name: 'QC Sports Complex', pct: 34, cap: '170/500', dist: '1.2 km', eta: '14 min', status: 'Available', sc: 'var(--success)', amenities: ['🍚 Food','💧 Water','🏥 Medical','🔌 Power','📡 WiFi'] },
+  sm2: { name: 'Manila North High School', pct: 84, cap: '378/450', dist: '2.8 km', eta: '32 min', status: 'Filling up', sc: 'var(--warn)', amenities: ['💧 Water','🏥 Medical','🔌 Power'] },
+  sm3: { name: 'Pasig Evacuation Center', pct: 94, cap: '470/500', dist: '0.8 km', eta: '9 min', status: 'Near full', sc: 'var(--danger)', amenities: ['🍚 Food','💧 Water'] },
+  sm4: { name: 'Marikina Gym', pct: 35, cap: '210/600', dist: '3.1 km', eta: '36 min', status: 'Available', sc: 'var(--success)', amenities: ['🍚 Food','💧 Water','🏥 Medical','🔌 Power','📡 WiFi','🐾 Pets'] },
+  sm5: { name: 'Caloocan Hall', pct: 73, cap: '290/400', dist: '4.2 km', eta: '48 min', status: 'Moderate', sc: 'var(--warn)', amenities: ['💧 Water','🔌 Power'] },
+};
+function showPopup(id, el) {
+  const s = shelters[id];
+  const popup = document.getElementById('map-popup');
+  document.getElementById('popup-name').textContent = s.name;
+  document.getElementById('popup-pct').textContent = s.pct + '%';
+  document.getElementById('popup-pct').style.color = s.sc;
+  const bar = document.getElementById('popup-pct-bar');
+  bar.style.width = s.pct + '%';
+  bar.style.background = s.sc;
+  document.getElementById('popup-cap').textContent = s.cap;
+  document.getElementById('popup-dist').textContent = s.dist;
+  document.getElementById('popup-eta').textContent = s.eta;
+  const stat = document.getElementById('popup-status');
+  stat.textContent = s.status; stat.style.color = s.sc;
+  const am = document.getElementById('popup-amenities');
+  am.innerHTML = s.amenities.map(a => `<span style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:3px;padding:1px 5px">${a}</span>`).join('');
+  const rect = el.parentElement.getBoundingClientRect();
+  const elRect = el.getBoundingClientRect();
+  popup.style.left = (elRect.left - rect.left + 50) + 'px';
+  popup.style.top = (elRect.top - rect.top - 20) + 'px';
+  popup.classList.add('visible');
+}
+document.getElementById('map-viz').addEventListener('click', function(e) {
+  if (!e.target.classList.contains('shelter-marker')) {
+    document.getElementById('map-popup').classList.remove('visible');
+  }
+});
+
+function findRoute() {
+  const btn = document.getElementById('route-btn-text');
+  const spinner = document.getElementById('route-spinner');
+  btn.style.display = 'none'; spinner.style.display = 'block';
+  setTimeout(() => {
+    btn.style.display = 'inline'; spinner.style.display = 'none';
+    document.getElementById('route-result').classList.add('visible');
+    document.getElementById('route-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 1800);
+}
+
+function submitReport() {
+  const btn = document.getElementById('report-btn-text');
+  const spinner = document.getElementById('report-spinner');
+  btn.style.display = 'none'; spinner.style.display = 'block';
+  setTimeout(() => {
+    btn.style.display = 'inline'; spinner.style.display = 'none';
+    const feed = document.getElementById('community-feed');
+    const newItem = document.createElement('div');
+    newItem.style.cssText = 'background:var(--card);border:1px solid rgba(0,212,170,0.3);border-radius:12px;padding:14px;animation:fadeIn .4s ease';
+    newItem.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div style="font-weight:600;font-size:13px">QC Sports Complex</div>
+        <div style="display:flex;gap:6px"><span class="tag tag-ok">Just submitted</span></div>
+      </div>
+      <div style="font-size:13px;color:var(--muted)">Your report is being processed by AI confidence filter…</div>
+      <div style="font-size:11px;color:var(--success);margin-top:6px">Thank you! Report queued for verification.</div>`;
+    feed.insertBefore(newItem, feed.firstChild);
+  }, 1200);
+}
+
+const langs = ['🇵🇭 Filipino', '🇲🇾 Bahasa', '🇨🇳 中文', '🇻🇳 Tiếng Việt', '🇬🇧 English'];
+let langIdx = 0;
+function cycleLang() {
+  langIdx = (langIdx + 1) % langs.length;
+  document.getElementById('lang-btn').textContent = langs[langIdx];
+}
+
+setInterval(() => {
+  const el = document.getElementById('last-update');
+  const secs = [5, 10, 15, 20, 25, 30, 45, 60];
+  const s = secs[Math.floor(Math.random() * secs.length)];
+  el.textContent = s < 60 ? `${s} seconds ago` : '1 minute ago';
+}, 8000);
+
+// Rain chart
+const rainData = [
+  { label: '6AM', mm: 22, past: true },
+  { label: '9AM', mm: 47, past: true },
+  { label: '12PM', mm: 87, past: false },
+  { label: '3PM', mm: 112, past: false },
+  { label: '6PM', mm: 98, past: false },
+  { label: '9PM', mm: 61, past: false },
+  { label: '12AM', mm: 34, past: false },
+  { label: '3AM', mm: 18, past: false },
+];
+const maxMm = 112;
+const chart = document.getElementById('rain-chart');
+chart.innerHTML = rainData.map(d => {
+  const pct = Math.round((d.mm / maxMm) * 100);
+  const col = d.mm >= 90 ? 'var(--danger)' : d.mm >= 55 ? 'var(--warn)' : 'rgba(61,155,255,0.6)';
+  const opacity = d.past ? '0.45' : '1';
+  return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;height:110px">
+    <span style="font-size:9px;font-weight:600;color:${col};opacity:${opacity}">${d.mm}</span>
+    <div style="width:100%;height:${pct}%;background:${col};border-radius:3px 3px 0 0;opacity:${opacity};position:relative;transition:height .5s">
+      ${d.past ? `<div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,0.06) 0,rgba(255,255,255,0.06) 2px,transparent 2px,transparent 6px);border-radius:3px 3px 0 0"></div>` : ''}
+    </div>
+    <span style="font-size:9px;color:var(--muted);margin-top:2px">${d.label}</span>
+  </div>`;
+}).join('');
+
+const style = document.createElement('style');
+style.textContent = '@keyframes fadeIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:none} }';
+document.head.appendChild(style);
+</script>
+
+</body>
+</html>

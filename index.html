@@ -803,8 +803,8 @@ function showPopup(id, el) {
   popup.style.top = (elRect.top - rect.top - 20) + 'px';
   popup.classList.add('visible');
   document.querySelectorAll('.shelter-marker').forEach(m => m.style.transform='scale(1)');
-  el.style.transform = 'scale(1.25)';
   drawRouteToShelter(el);
+  el.style.transform = 'scale(1.25)';
 }
 
 function drawRouteToShelter(markerEl) {
@@ -813,12 +813,17 @@ function drawRouteToShelter(markerEl) {
   const mapRect = mapViz.getBoundingClientRect();
   const svg = document.querySelector('.map-roads');
   if (!svg || !user || !markerEl) return;
-  const userRect = user.getBoundingClientRect();
-  const sourceX = (userRect.left + userRect.width / 2 - mapRect.left) * (600 / mapRect.width);
-  const sourceY = (userRect.top + userRect.height / 2 - mapRect.top) * (340 / mapRect.height);
-  const targetRect = markerEl.getBoundingClientRect();
-  const targetX = (targetRect.left + targetRect.width / 2 - mapRect.left) * (600 / mapRect.width);
-  const targetY = (targetRect.top + targetRect.height / 2 - mapRect.top) * (340 / mapRect.height);
+
+  // Compute points using map-local coordinates rather than scaled bounding boxes
+  const userX = user.offsetLeft + user.offsetWidth / 2;
+  const userY = user.offsetTop + user.offsetHeight / 2;
+  const targetXpx = markerEl.offsetLeft + markerEl.offsetWidth / 2;
+  const targetYpx = markerEl.offsetTop + markerEl.offsetHeight / 2;
+
+  const sourceX = (userX / mapRect.width) * 600;
+  const sourceY = (userY / mapRect.height) * 340;
+  const targetX = (targetXpx / mapRect.width) * 600;
+  const targetY = (targetYpx / mapRect.height) * 340;
 
   const existing = svg.querySelector('.route-path');
   if (existing) existing.remove();

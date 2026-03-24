@@ -377,11 +377,11 @@ transition: all .2s;
             <text x="120" y="245" text-anchor="middle" fill="rgba(61,155,255,0.5)" font-size="9" font-family="sans-serif">Flood zone</text>
             <path d="M285,195 Q260,180 230,170 Q200,160 185,145" fill="none" stroke="#00d4aa" stroke-width="2" stroke-dasharray="6,4" opacity="0.7"/>
           </svg>
-          <div class="shelter-marker shelter-ok" style="left:26%;top:38%" onclick="showPopup('sm1', this)">QC</div>
-          <div class="shelter-marker shelter-warn" style="left:52%;top:22%" onclick="showPopup('sm2', this)">MN</div>
-          <div class="shelter-marker shelter-full" style="left:18%;top:62%" onclick="showPopup('sm3', this)">PV</div>
-          <div class="shelter-marker shelter-ok" style="left:68%;top:48%" onclick="showPopup('sm4', this)">MG</div>
-          <div class="shelter-marker shelter-warn" style="left:75%;top:25%" onclick="showPopup('sm5', this)">CH</div>
+          <div class="shelter-marker shelter-ok" data-id="sm1" style="left:26%;top:38%" onclick="showPopup('sm1', this)">QC</div>
+          <div class="shelter-marker shelter-warn" data-id="sm2" style="left:52%;top:22%" onclick="showPopup('sm2', this)">MN</div>
+          <div class="shelter-marker shelter-full" data-id="sm3" style="left:18%;top:62%" onclick="showPopup('sm3', this)">PV</div>
+          <div class="shelter-marker shelter-ok" data-id="sm4" style="left:68%;top:48%" onclick="showPopup('sm4', this)">MG</div>
+          <div class="shelter-marker shelter-warn" data-id="sm5" style="left:75%;top:25%" onclick="showPopup('sm5', this)">CH</div>
           <div class="user-loc" style="left:calc(47% - 7px);top:calc(57% - 7px)"></div>
           <div class="shelter-popup" id="map-popup">
             <div class="popup-name" id="popup-name">Quezon City Sports Complex</div>
@@ -395,6 +395,21 @@ transition: all .2s;
             <div class="legend-item"><div class="legend-dot" style="background:var(--success)"></div>Available</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--warn)"></div>Filling up</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--danger)"></div>Full</div>
+          </div>
+          <div class="shelter-list-panel" style="padding:12px 14px;">
+            <div class="shelter-card recommended" onclick="focusShelter('sm1')">
+              <div class="rec-badge">⭐</div>
+              <div class="shelter-name">QC Sports Complex</div>
+              <div class="shelter-meta">1.2 km · Available</div>
+            </div>
+            <div class="shelter-card" onclick="focusShelter('sm2')">
+              <div class="shelter-name">Manila North High School</div>
+              <div class="shelter-meta">2.8 km · Filling up</div>
+            </div>
+            <div class="shelter-card" onclick="focusShelter('sm3')">
+              <div class="shelter-name">Pasig Evacuation Center</div>
+              <div class="shelter-meta">0.8 km · Near full</div>
+            </div>
           </div>
         </div>
       </div>
@@ -570,6 +585,15 @@ transition: all .2s;
     <div class="eta-item"><div class="eta-val">1.2 km</div><div class="eta-label">Distance</div></div>
     <div class="eta-item"><div class="eta-val">14 min</div><div class="eta-label">ETA (walking)</div></div>
     <div class="eta-item"><div class="eta-val">500</div><div class="eta-label">Total capacity</div></div>
+  </div>
+  <div class="ai-explain" style="margin-top:16px;padding:14px;background:rgba(61,155,255,0.06);border:1px solid rgba(61,155,255,0.15);border-radius:10px;font-size:12px">
+    <strong>AI Recommendation</strong>
+    <ul style="margin:8px 0 0 14px;padding:0;list-style:disc">
+      <li>Closest available shelter</li>
+      <li>Medical facilities available</li>
+      <li>Low crowd density</li>
+      <li>Safe road access</li>
+    </ul>
   </div>
   <div class="shelter-amenities" style="margin-top:14px">
     <span class="amenity">🍚 Food available</span>
@@ -788,6 +812,34 @@ function showPopup(id, el) {
   popup.style.left = (elRect.left - rect.left + 36) + 'px';
   popup.style.top = (elRect.top - rect.top - 20) + 'px';
   popup.classList.add('visible');
+  document.querySelectorAll('.shelter-marker').forEach(m => m.style.transform='scale(1)');
+  el.style.transform = 'scale(1.25)';
+}
+
+function focusShelter(id) {
+  const marker = document.querySelector(`.shelter-marker[data-id="${id}"]`);
+  if (!marker) return;
+  document.querySelectorAll('.shelter-marker').forEach(m => m.style.transform='scale(1)');
+  marker.style.transform = 'scale(1.3)';
+  showPopup(id, marker);
+  const bounds = marker.getBoundingClientRect();
+  window.scrollTo({ top: bounds.top - 80, behavior: 'smooth' });
+}
+
+function drawRoute() {
+  const svg = document.querySelector('.map-roads');
+  if (!svg) return;
+  // clear previous route if exists
+  const existing = svg.querySelector('.route-path');
+  if (existing) existing.remove();
+  const route = document.createElementNS('http://www.w3.org/2000/svg','path');
+  route.setAttribute('d','M285,195 Q260,180 230,170 Q200,160 185,145');
+  route.setAttribute('stroke','#3d9bff');
+  route.setAttribute('stroke-width','3');
+  route.setAttribute('fill','none');
+  route.setAttribute('stroke-dasharray','6 4');
+  route.setAttribute('class','route-path');
+  svg.appendChild(route);
 }
 document.getElementById('map-viz').addEventListener('click', function(e) {
   if (!e.target.classList.contains('shelter-marker')) {
@@ -802,6 +854,7 @@ function findRoute() {
   setTimeout(() => {
     btn.style.display = 'inline'; spinner.style.display = 'none';
     document.getElementById('route-result').classList.add('visible');
+    drawRoute();
     document.getElementById('route-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 1800);
 }

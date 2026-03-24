@@ -804,8 +804,34 @@ function showPopup(id, el) {
   popup.classList.add('visible');
   document.querySelectorAll('.shelter-marker').forEach(m => m.style.transform='scale(1)');
   el.style.transform = 'scale(1.25)';
+  drawRouteToShelter(el);
 }
 
+function drawRouteToShelter(markerEl) {
+  const mapViz = document.getElementById('map-viz');
+  const user = document.querySelector('.user-loc');
+  const mapRect = mapViz.getBoundingClientRect();
+  const svg = document.querySelector('.map-roads');
+  if (!svg || !user || !markerEl) return;
+  const userRect = user.getBoundingClientRect();
+  const sourceX = (userRect.left + userRect.width / 2 - mapRect.left) * (600 / mapRect.width);
+  const sourceY = (userRect.top + userRect.height / 2 - mapRect.top) * (340 / mapRect.height);
+  const targetRect = markerEl.getBoundingClientRect();
+  const targetX = (targetRect.left + targetRect.width / 2 - mapRect.left) * (600 / mapRect.width);
+  const targetY = (targetRect.top + targetRect.height / 2 - mapRect.top) * (340 / mapRect.height);
+
+  const existing = svg.querySelector('.route-path');
+  if (existing) existing.remove();
+  const route = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  route.setAttribute('d', `M${sourceX} ${sourceY} Q${(sourceX + targetX) / 2} ${(sourceY + targetY) / 2 - 35} ${targetX} ${targetY}`);
+  route.setAttribute('stroke', '#ffba47');
+  route.setAttribute('stroke-width', '3');
+  route.setAttribute('fill', 'none');
+  route.setAttribute('stroke-dasharray', '8 5');
+  route.setAttribute('class', 'route-path');
+  route.setAttribute('stroke-opacity', '0.95');
+  svg.appendChild(route);
+}
 function focusShelter(id) {
   const marker = document.querySelector(`.shelter-marker[data-id="${id}"]`);
   if (!marker) return;

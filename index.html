@@ -636,17 +636,8 @@ transition: all .2s;
   </div>
 
   <div class="pred-card">
-    <div class="pred-card-title">📊 Rainfall Forecast (mm)</div>
-    <div class="chart-bars" id="rain-chart">
-      <div class="bar-wrap"><div class="bar" style="height:60%;background:rgba(61,155,255,0.5)"></div><span class="bar-label">6AM</span></div>
-      <div class="bar-wrap"><div class="bar" style="height:75%;background:rgba(61,155,255,0.6)"></div><span class="bar-label">9AM</span></div>
-      <div class="bar-wrap"><div class="bar" style="height:85%;background:rgba(255,170,0,0.7)"></div><span class="bar-label">12PM</span></div>
-      <div class="bar-wrap"><div class="bar" style="height:95%;background:var(--danger)"></div><span class="bar-label">3PM</span></div>
-      <div class="bar-wrap"><div class="bar" style="height:88%;background:var(--danger)"></div><span class="bar-label">6PM</span></div>
-      <div class="bar-wrap"><div class="bar" style="height:70%;background:rgba(255,170,0,0.6)"></div><span class="bar-label">9PM</span></div>
-      <div class="bar-wrap"><div class="bar" style="height:45%;background:rgba(61,155,255,0.4)"></div><span class="bar-label">12AM</span></div>
-      <div class="bar-wrap"><div class="bar" style="height:25%;background:rgba(61,155,255,0.3)"></div><span class="bar-label">3AM</span></div>
-    </div>
+    <div class="pred-card-title">📊 Rain Prediction Graph (mm)</div>
+    <div class="chart-bars" id="rain-chart" aria-label="Rainfall prediction bars"></div>
   </div>
 
   <div class="pred-card">
@@ -832,6 +823,40 @@ function cycleLang() {
   langIdx = (langIdx + 1) % langs.length;
   document.getElementById('lang-btn').textContent = langs[langIdx];
 }
+
+const rainPrediction = [
+  { t: '6AM', mm: 60, color: 'rgba(61,155,255,0.5)' },
+  { t: '9AM', mm: 75, color: 'rgba(61,155,255,0.6)' },
+  { t: '12PM', mm: 85, color: 'rgba(255,170,0,0.7)' },
+  { t: '3PM', mm: 95, color: 'var(--danger)' },
+  { t: '6PM', mm: 88, color: 'var(--danger)' },
+  { t: '9PM', mm: 70, color: 'rgba(255,170,0,0.6)' },
+  { t: '12AM', mm: 45, color: 'rgba(61,155,255,0.4)' },
+  { t: '3AM', mm: 25, color: 'rgba(61,155,255,0.3)' },
+];
+
+function renderRainChart() {
+  const chart = document.getElementById('rain-chart');
+  if (!chart) return;
+  chart.innerHTML = '';
+  rainPrediction.forEach(({ t, mm, color }) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'bar-wrap';
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.style.height = `${Math.max(4, Math.min(mm, 100))}%`;
+    bar.style.background = color;
+    bar.setAttribute('aria-label', `${t} rain ${mm} mm`);
+    const label = document.createElement('span');
+    label.className = 'bar-label';
+    label.textContent = t;
+    wrap.appendChild(bar);
+    wrap.appendChild(label);
+    chart.appendChild(wrap);
+  });
+}
+
+renderRainChart();
 
 setInterval(() => {
   const el = document.getElementById('last-update');

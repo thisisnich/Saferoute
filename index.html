@@ -39,8 +39,10 @@ padding: 0 2rem; height: 60px;
 .logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, #3d9bff, #00d4aa); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
 .nav-links { display: flex; gap: 0; }
 .nav-links button { background: none; border: none; color: var(--muted); font-family: var(--font); font-size: 13px; cursor: pointer; padding: 8px 14px; border-radius: 6px; transition: all .2s; }
-.nav-links button:hover, .nav-links button.active { color: var(--text); background: rgba(255,255,255,0.06); }
-.nav-badge { background: var(--danger); color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 4px; font-weight: 600; animation: pulse 2s infinite; }
+.nav-links button:hover, .nav-links button.active { color: var(--text); background: rgba(255,255,255,0.06); }  .nav-links button.active { border-bottom: 2px solid var(--accent); }
+  .map-roads .route-path { transition: stroke-dashoffset 0.3s ease, stroke-opacity 0.3s ease; }
+  .shelter-popup { opacity: 0; transform: translateY(-4px); transition: opacity 0.24s ease, transform 0.24s ease; }
+  .shelter-popup.visible { opacity: 1; transform: translateY(0); }.nav-badge { background: var(--danger); color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 4px; font-weight: 600; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
 
 .page { display: none; }
@@ -320,7 +322,7 @@ transition: all .2s;
     <div class="hero-top">
       <div>
         <h1>Metro Manila – Disaster Dashboard</h1>
-        <p>Real-time AI monitoring · Last updated <span id="last-update">just now</span></p>
+        <p>Real-time AI monitoring · Last updated <span id="last-update">just now</span> · <span id="update-status" style="font-weight:600;color:var(--success)">Fresh</span></p>
       </div>
       <span class="tag tag-warn">Typhoon Advisory</span>
     </div>
@@ -395,21 +397,6 @@ transition: all .2s;
             <div class="legend-item"><div class="legend-dot" style="background:var(--success)"></div>Available</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--warn)"></div>Filling up</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--danger)"></div>Full</div>
-          </div>
-          <div class="shelter-list-panel" style="padding:12px 14px;">
-            <div class="shelter-card recommended" onclick="focusShelter('sm1')">
-              <div class="rec-badge">⭐</div>
-              <div class="shelter-name">QC Sports Complex</div>
-              <div class="shelter-meta">1.2 km · Available</div>
-            </div>
-            <div class="shelter-card" onclick="focusShelter('sm2')">
-              <div class="shelter-name">Manila North High School</div>
-              <div class="shelter-meta">2.8 km · Filling up</div>
-            </div>
-            <div class="shelter-card" onclick="focusShelter('sm3')">
-              <div class="shelter-name">Pasig Evacuation Center</div>
-              <div class="shelter-meta">0.8 km · Near full</div>
-            </div>
           </div>
         </div>
       </div>
@@ -566,6 +553,9 @@ transition: all .2s;
   <button class="btn-route" onclick="findRoute()">
     <span id="route-btn-text">Find My SafeRoute →</span>
     <div class="spinner" id="route-spinner" style="display:none"></div>
+  </button>
+  <button class="btn-route" style="margin-top:10px;background:rgba(255,255,255,0.08);color:var(--text);border:1px solid rgba(255,255,255,0.15);font-size:13px" onclick="clearRoute()">
+    Clear route & reset
   </button>
 </div>
 
@@ -859,6 +849,14 @@ function findRoute() {
   }, 1800);
 }
 
+function clearRoute() {
+  const graph = document.querySelector('.map-roads');
+  const route = graph?.querySelector('.route-path');
+  if (route) route.remove();
+  document.querySelectorAll('.shelter-marker').forEach(m => m.style.transform='scale(1)');
+  document.getElementById('route-result').classList.remove('visible');
+}
+
 function submitReport() {
   const btn = document.getElementById('report-btn-text');
   const spinner = document.getElementById('report-spinner');
@@ -916,9 +914,20 @@ if (chart) {
 
 setInterval(() => {
   const el = document.getElementById('last-update');
+  const status = document.getElementById('update-status');
   const secs = [5, 10, 15, 20, 25, 30, 45, 60];
   const s = secs[Math.floor(Math.random() * secs.length)];
   el.textContent = s < 60 ? `${s} seconds ago` : '1 minute ago';
+  if (s <= 25) {
+    status.textContent = 'Fresh';
+    status.style.color = 'var(--success)';
+  } else if (s <= 45) {
+    status.textContent = 'Stale';
+    status.style.color = 'var(--warn)';
+  } else {
+    status.textContent = 'Old';
+    status.style.color = 'var(--danger)';
+  }
 }, 8000);
 
 const style = document.createElement('style');

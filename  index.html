@@ -91,26 +91,15 @@ background-size: 40px 40px;
 }
 .map-roads { position: absolute; inset: 0; }
 .shelter-marker {
-position: absolute; width: 44px;
-display: flex; flex-direction: column; align-items: center;
-cursor: pointer; transition: transform .2s; gap: 2px;
-}
-.shelter-marker:hover { transform: scale(1.12); }
-.shelter-icon {
-width: 36px; height: 36px; border-radius: 50%;
+position: absolute; width: 32px; height: 32px; border-radius: 50%;
 display: flex; align-items: center; justify-content: center;
-font-size: 12px; font-weight: 700;
+font-size: 13px; font-weight: 700; cursor: pointer;
+transition: transform .2s;
 }
-.shelter-pct {
-font-size: 9px; font-weight: 700; line-height: 1;
-background: rgba(0,0,0,0.55); border-radius: 4px; padding: 1px 4px;
-}
-.shelter-ok .shelter-icon { background: rgba(0,212,170,0.2); border: 2px solid var(–success); color: var(–success); }
-.shelter-ok .shelter-pct { color: var(–success); }
-.shelter-warn .shelter-icon { background: rgba(255,170,0,0.2); border: 2px solid var(–warn); color: var(–warn); }
-.shelter-warn .shelter-pct { color: var(–warn); }
-.shelter-full .shelter-icon { background: rgba(255,77,77,0.2); border: 2px solid var(–danger); color: var(–danger); }
-.shelter-full .shelter-pct { color: var(–danger); }
+.shelter-marker:hover { transform: scale(1.15); }
+.shelter-ok { background: rgba(0,212,170,0.2); border: 2px solid var(–success); color: var(–success); }
+.shelter-warn { background: rgba(255,170,0,0.2); border: 2px solid var(–warn); color: var(–warn); }
+.shelter-full { background: rgba(255,77,77,0.2); border: 2px solid var(–danger); color: var(–danger); }
 .user-loc { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: var(–accent); border: 3px solid rgba(255,255,255,0.9); box-shadow: 0 0 0 6px rgba(61,155,255,0.2); animation: locPulse 2s ease-in-out infinite; }
 @keyframes locPulse { 0%,100%{box-shadow:0 0 0 6px rgba(61,155,255,0.2)} 50%{box-shadow:0 0 0 12px rgba(61,155,255,0.05)} }
 .shelter-popup {
@@ -387,25 +376,18 @@ transition: all .2s;
             <text x="120" y="245" text-anchor="middle" fill="rgba(61,155,255,0.5)" font-size="9" font-family="sans-serif">Flood zone</text>
             <path d="M285,195 Q260,180 230,170 Q200,160 185,145" fill="none" stroke="#00d4aa" stroke-width="2" stroke-dasharray="6,4" opacity="0.7"/>
           </svg>
-          <div class="shelter-marker shelter-ok" style="left:26%;top:34%" onclick="showPopup('sm1', this)"><div class="shelter-icon">QC</div><span class="shelter-pct">34%</span></div>
-          <div class="shelter-marker shelter-warn" style="left:52%;top:18%" onclick="showPopup('sm2', this)"><div class="shelter-icon">MN</div><span class="shelter-pct">84%</span></div>
-          <div class="shelter-marker shelter-full" style="left:18%;top:57%" onclick="showPopup('sm3', this)"><div class="shelter-icon">PV</div><span class="shelter-pct">94%</span></div>
-          <div class="shelter-marker shelter-ok" style="left:68%;top:44%" onclick="showPopup('sm4', this)"><div class="shelter-icon">MG</div><span class="shelter-pct">35%</span></div>
-          <div class="shelter-marker shelter-warn" style="left:75%;top:20%" onclick="showPopup('sm5', this)"><div class="shelter-icon">CH</div><span class="shelter-pct">73%</span></div>
+          <div class="shelter-marker shelter-ok" style="left:26%;top:38%" onclick="showPopup('sm1', this)">QC</div>
+          <div class="shelter-marker shelter-warn" style="left:52%;top:22%" onclick="showPopup('sm2', this)">MN</div>
+          <div class="shelter-marker shelter-full" style="left:18%;top:62%" onclick="showPopup('sm3', this)">PV</div>
+          <div class="shelter-marker shelter-ok" style="left:68%;top:48%" onclick="showPopup('sm4', this)">MG</div>
+          <div class="shelter-marker shelter-warn" style="left:75%;top:25%" onclick="showPopup('sm5', this)">CH</div>
           <div class="user-loc" style="left:calc(47% - 7px);top:calc(57% - 7px)"></div>
-        <div class="shelter-popup" id="map-popup">
+          <div class="shelter-popup" id="map-popup">
             <div class="popup-name" id="popup-name">Quezon City Sports Complex</div>
-            <div class="popup-row"><span>Filled</span><span class="popup-val" id="popup-pct" style="color:var(--success)">34%</span></div>
-            <div style="margin:5px 0 7px">
-              <div style="height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden">
-                <div id="popup-pct-bar" style="height:100%;border-radius:3px;background:var(--success);width:34%;transition:width .4s"></div>
-              </div>
-            </div>
-            <div class="popup-row"><span>Capacity</span><span class="popup-val" id="popup-cap">170/500</span></div>
+            <div class="popup-row"><span>Capacity</span><span class="popup-val" id="popup-cap">340/500</span></div>
             <div class="popup-row"><span>Distance</span><span class="popup-val" id="popup-dist">1.2 km</span></div>
             <div class="popup-row"><span>ETA</span><span class="popup-val" id="popup-eta">14 min</span></div>
             <div class="popup-row"><span>Status</span><span class="popup-val" id="popup-status" style="color:var(--success)">Available</span></div>
-            <div id="popup-amenities" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:7px;font-size:10px"></div>
             <button style="margin-top:8px;width:100%;background:var(--accent);color:white;border:none;border-radius:6px;padding:6px;font-size:12px;cursor:pointer;font-family:inherit" onclick="showPage('routing')">Get Directions →</button>
           </div>
           <div class="map-legend">
@@ -655,14 +637,15 @@ transition: all .2s;
 
   <div class="pred-card">
     <div class="pred-card-title">📊 Rainfall Forecast (mm)</div>
-    <div style="position:relative">
-      <div style="display:flex;align-items:flex-end;gap:5px;height:110px;padding-bottom:0" id="rain-chart">
-        <!-- bars rendered by JS -->
-      </div>
-      <div style="display:flex;justify-content:space-between;margin-top:4px;padding:0 2px">
-        <span style="font-size:9px;color:var(--muted)">0 mm</span>
-        <span style="font-size:9px;color:var(--muted)">max 112 mm</span>
-      </div>
+    <div class="chart-bars" id="rain-chart">
+      <div class="bar-wrap"><div class="bar" style="height:60%;background:rgba(61,155,255,0.5)"></div><span class="bar-label">6AM</span></div>
+      <div class="bar-wrap"><div class="bar" style="height:75%;background:rgba(61,155,255,0.6)"></div><span class="bar-label">9AM</span></div>
+      <div class="bar-wrap"><div class="bar" style="height:85%;background:rgba(255,170,0,0.7)"></div><span class="bar-label">12PM</span></div>
+      <div class="bar-wrap"><div class="bar" style="height:95%;background:var(--danger)"></div><span class="bar-label">3PM</span></div>
+      <div class="bar-wrap"><div class="bar" style="height:88%;background:var(--danger)"></div><span class="bar-label">6PM</span></div>
+      <div class="bar-wrap"><div class="bar" style="height:70%;background:rgba(255,170,0,0.6)"></div><span class="bar-label">9PM</span></div>
+      <div class="bar-wrap"><div class="bar" style="height:45%;background:rgba(61,155,255,0.4)"></div><span class="bar-label">12AM</span></div>
+      <div class="bar-wrap"><div class="bar" style="height:25%;background:rgba(61,155,255,0.3)"></div><span class="bar-label">3AM</span></div>
     </div>
   </div>
 
@@ -784,31 +767,25 @@ function showPage(id) {
 }
 
 const shelters = {
-  sm1: { name: 'QC Sports Complex', pct: 34, cap: '170/500', dist: '1.2 km', eta: '14 min', status: 'Available', sc: 'var(--success)', amenities: ['🍚 Food','💧 Water','🏥 Medical','🔌 Power','📡 WiFi'] },
-  sm2: { name: 'Manila North High School', pct: 84, cap: '378/450', dist: '2.8 km', eta: '32 min', status: 'Filling up', sc: 'var(--warn)', amenities: ['💧 Water','🏥 Medical','🔌 Power'] },
-  sm3: { name: 'Pasig Evacuation Center', pct: 94, cap: '470/500', dist: '0.8 km', eta: '9 min', status: 'Near full', sc: 'var(--danger)', amenities: ['🍚 Food','💧 Water'] },
-  sm4: { name: 'Marikina Gym', pct: 35, cap: '210/600', dist: '3.1 km', eta: '36 min', status: 'Available', sc: 'var(--success)', amenities: ['🍚 Food','💧 Water','🏥 Medical','🔌 Power','📡 WiFi','🐾 Pets'] },
-  sm5: { name: 'Caloocan Hall', pct: 73, cap: '290/400', dist: '4.2 km', eta: '48 min', status: 'Moderate', sc: 'var(--warn)', amenities: ['💧 Water','🔌 Power'] },
+  sm1: { name: 'QC Sports Complex', cap: '170/500', dist: '1.2 km', eta: '14 min', status: 'Available', sc: 'var(--success)' },
+  sm2: { name: 'Manila North High School', cap: '380/450', dist: '2.8 km', eta: '32 min', status: 'Filling up', sc: 'var(--warn)' },
+  sm3: { name: 'Pasig Evacuation Center', cap: '470/500', dist: '0.8 km', eta: '9 min', status: 'Near full', sc: 'var(--danger)' },
+  sm4: { name: 'Marikina Gym', cap: '210/600', dist: '3.1 km', eta: '36 min', status: 'Available', sc: 'var(--success)' },
+  sm5: { name: 'Caloocan Hall', cap: '290/400', dist: '4.2 km', eta: '48 min', status: 'Moderate', sc: 'var(--warn)' },
 };
 function showPopup(id, el) {
   const s = shelters[id];
   const popup = document.getElementById('map-popup');
   document.getElementById('popup-name').textContent = s.name;
-  document.getElementById('popup-pct').textContent = s.pct + '%';
-  document.getElementById('popup-pct').style.color = s.sc;
-  const bar = document.getElementById('popup-pct-bar');
-  bar.style.width = s.pct + '%';
-  bar.style.background = s.sc;
   document.getElementById('popup-cap').textContent = s.cap;
   document.getElementById('popup-dist').textContent = s.dist;
   document.getElementById('popup-eta').textContent = s.eta;
   const stat = document.getElementById('popup-status');
-  stat.textContent = s.status; stat.style.color = s.sc;
-  const am = document.getElementById('popup-amenities');
-  am.innerHTML = s.amenities.map(a => `<span style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:3px;padding:1px 5px">${a}</span>`).join('');
+  stat.textContent = s.status;
+  stat.style.color = s.sc;
   const rect = el.parentElement.getBoundingClientRect();
   const elRect = el.getBoundingClientRect();
-  popup.style.left = (elRect.left - rect.left + 50) + 'px';
+  popup.style.left = (elRect.left - rect.left + 36) + 'px';
   popup.style.top = (elRect.top - rect.top - 20) + 'px';
   popup.classList.add('visible');
 }
@@ -862,32 +839,6 @@ setInterval(() => {
   const s = secs[Math.floor(Math.random() * secs.length)];
   el.textContent = s < 60 ? `${s} seconds ago` : '1 minute ago';
 }, 8000);
-
-// Rain chart
-const rainData = [
-  { label: '6AM', mm: 22, past: true },
-  { label: '9AM', mm: 47, past: true },
-  { label: '12PM', mm: 87, past: false },
-  { label: '3PM', mm: 112, past: false },
-  { label: '6PM', mm: 98, past: false },
-  { label: '9PM', mm: 61, past: false },
-  { label: '12AM', mm: 34, past: false },
-  { label: '3AM', mm: 18, past: false },
-];
-const maxMm = 112;
-const chart = document.getElementById('rain-chart');
-chart.innerHTML = rainData.map(d => {
-  const pct = Math.round((d.mm / maxMm) * 100);
-  const col = d.mm >= 90 ? 'var(--danger)' : d.mm >= 55 ? 'var(--warn)' : 'rgba(61,155,255,0.6)';
-  const opacity = d.past ? '0.45' : '1';
-  return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;height:110px">
-    <span style="font-size:9px;font-weight:600;color:${col};opacity:${opacity}">${d.mm}</span>
-    <div style="width:100%;height:${pct}%;background:${col};border-radius:3px 3px 0 0;opacity:${opacity};position:relative;transition:height .5s">
-      ${d.past ? `<div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,0.06) 0,rgba(255,255,255,0.06) 2px,transparent 2px,transparent 6px);border-radius:3px 3px 0 0"></div>` : ''}
-    </div>
-    <span style="font-size:9px;color:var(--muted);margin-top:2px">${d.label}</span>
-  </div>`;
-}).join('');
 
 const style = document.createElement('style');
 style.textContent = '@keyframes fadeIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:none} }';
